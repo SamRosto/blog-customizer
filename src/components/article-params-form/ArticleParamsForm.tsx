@@ -1,5 +1,8 @@
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
+import { useEnterSubmit } from 'src/ui/select/hooks/useEnterSubmit';
+
 import { ArticleStateType, defaultArticleState, fontFamilyOptions, fontSizeOptions, OptionType, 
 	fontColors, backgroundColors, contentWidthArr } from 'src/constants/articleProps';
 import { Text } from 'src/ui/text';
@@ -7,18 +10,27 @@ import { Select } from 'src/ui/select';
 import { RadioGroup } from 'src/ui/radio-group';
 
 import styles from './ArticleParamsForm.module.scss';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { Separator } from 'src/ui/separator';
 
 type ArticleParamsFormProps = {
 	currAppState: ArticleStateType
-	setAppState: (v: ArticleStateType) => void;
+	setArticleState: (v: ArticleStateType) => void;
 };
 
-export const ArticleParamsForm = ({setAppState}: ArticleParamsFormProps) => {
-	const [isOpened, setIsOpened] = useState(false)
+export const ArticleParamsForm = ({setArticleState}: ArticleParamsFormProps) => {
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [formState, setFormState] = useState<ArticleStateType>(defaultArticleState)
+
+	const asideRef = useRef<HTMLDivElement>(null)
+
+	useOutsideClickClose({
+		isOpen: isMenuOpen, 
+		rootRef: asideRef, 
+		onChange: ()=>  setIsMenuOpen,
+		onClose: ()=> setIsMenuOpen(prevState => !prevState),
+	})
 
 	const handleOptionChange = (field: string) => {
 		return (val: OptionType) => {
@@ -31,24 +43,27 @@ export const ArticleParamsForm = ({setAppState}: ArticleParamsFormProps) => {
 
 	const handleSubmit = (e:FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
-		setAppState(formState)
+		setArticleState(formState)
 	}
 
 	const handleReset = (e:FormEvent<HTMLFormElement>) => {
 		e.preventDefault
 		setFormState(defaultArticleState)
-		setAppState(defaultArticleState)
+		setArticleState(defaultArticleState)
 	}
 
 	return (
 		<>
 			<ArrowButton 
-				isOpen={isOpened} 
+				isOpen={isMenuOpen} 
 				onClick={() => {
-					setIsOpened(prevState => !prevState)
-				}} />
+					setIsMenuOpen(prevState => !prevState)
+			}} />
+
 			 <aside 
-				className={clsx(styles.container, isOpened && styles.container_open)}>
+				ref={asideRef}
+				className={clsx(styles.container, isMenuOpen && styles.container_open)}>
+
 				<form 
 					onSubmit={handleSubmit}
 					onReset={handleReset}

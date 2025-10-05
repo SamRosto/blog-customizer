@@ -14,6 +14,9 @@ export const useOutsideClickClose = ({
 	onChange,
 }: UseOutsideClickClose) => {
 	useEffect(() => {
+		// Останавливается эффект, если форма закрыта, чтобы не навешивать обработчик
+		if (!isOpen) return
+
 		const handleClick = (event: MouseEvent) => {
 			const { target } = event;
 			if (target instanceof Node && !rootRef.current?.contains(target)) {
